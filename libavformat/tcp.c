@@ -340,6 +340,8 @@ int ijk_tcp_getaddrinfo_nonblock(const char *hostname, const char *servname,
 /* return non zero if error */
 static int tcp_open(URLContext *h, const char *uri, int flags)
 {
+	av_log(NULL, AV_LOG_INFO, "tcp_open begin");
+	
     struct addrinfo hints = { 0 }, *ai, *cur_ai;
     int port, fd = -1;
     TCPContext *s = h->priv_data;
@@ -395,7 +397,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         h->rw_timeout = s->rw_timeout;
     }
 
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     snprintf(portstr, sizeof(portstr), "%d", port);
     if (s->listen)
@@ -413,14 +415,24 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
 
     if (!dns_entry) {
 #ifdef HAVE_PTHREADS
+
+		av_log(h, AV_LOG_INFO, "ijk_tcp_getaddrinfo_nonblock begin.\n");
         ret = ijk_tcp_getaddrinfo_nonblock(hostname, portstr, &hints, &ai, s->addrinfo_timeout, &h->interrupt_callback, s->addrinfo_one_by_one);
+		av_log(h, AV_LOG_INFO, "ijk_tcp_getaddrinfo_nonblock end.\n");
+		
 #else
         if (s->addrinfo_timeout > 0)
             av_log(h, AV_LOG_WARNING, "Ignore addrinfo_timeout without pthreads support.\n");
-        if (!hostname[0])
+        
+		av_log(h, AV_LOG_INFO, "getaddrinfo begin.\n");
+		
+		if (!hostname[0])
             ret = getaddrinfo(NULL, portstr, &hints, &ai);
         else
             ret = getaddrinfo(hostname, portstr, &hints, &ai);
+		
+		av_log(h, AV_LOG_INFO, "getaddrinfo end.\n");
+		
 #endif
 
         if (ret) {
@@ -510,6 +522,9 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     } else {
         freeaddrinfo(ai);
     }
+	
+	av_log(NULL, AV_LOG_INFO, "tcp_open end");
+	
     return 0;
 
  fail:
@@ -582,7 +597,7 @@ static int tcp_fast_open(URLContext *h, const char *http_request, const char *ur
         h->rw_timeout = s->rw_timeout;
     }
 
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     snprintf(portstr, sizeof(portstr), "%d", port);
     if (s->listen)
@@ -744,6 +759,8 @@ static int tcp_accept(URLContext *s, URLContext **c)
 
 static int tcp_read(URLContext *h, uint8_t *buf, int size)
 {
+	av_log(NULL, AV_LOG_INFO, "tcp_read begin %d\n", size);
+	
     TCPContext *s = h->priv_data;
     int ret;
 
@@ -753,8 +770,14 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
             return ret;
     }
     ret = recv(s->fd, buf, size, 0);
-    if (ret > 0)
-        av_application_did_io_tcp_read(s->app_ctx, (void*)h, ret);
+	if (ret == 0)
+        return AVERROR_EOF;
+	
+    /*if (ret > 0)
+        av_application_did_io_tcp_read(s->app_ctx, (void*)h, ret);*/
+	
+	av_log(NULL, AV_LOG_INFO, "tcp_read end %d\n", ret);
+	
     return ret < 0 ? ff_neterrno() : ret;
 }
 
