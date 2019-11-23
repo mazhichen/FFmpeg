@@ -424,7 +424,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     dns_time = av_gettime();
     if (!dns_entry) {
 #ifdef HAVE_PTHREADS
-        av_log(h, AV_LOG_INFO, ""mzclogprint ijk_tcp_getaddrinfo_nonblock begin.\n");
+        av_log(h, AV_LOG_INFO, "mzclogprint ijk_tcp_getaddrinfo_nonblock begin.\n");
         ret = ijk_tcp_getaddrinfo_nonblock(hostname, portstr, &hints, &ai, s->addrinfo_timeout, &h->interrupt_callback, s->addrinfo_one_by_one);
         av_log(h, AV_LOG_INFO, "mzclogprint ijk_tcp_getaddrinfo_nonblock end.\n");
 #else
@@ -562,7 +562,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     } else {
         freeaddrinfo(ai);
     }
-	av_log(NULL, AV_LOG_INFO, ""mzclogprint tcp_open end");
+	av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_open end");
     return 0;
 
  fail:
@@ -796,7 +796,7 @@ static int tcp_accept(URLContext *s, URLContext **c)
 
 static int tcp_read(URLContext *h, uint8_t *buf, int size)
 {
-	av_log(NULL, AV_LOG_INFO, ""mzclogprint tcp_read begin %d\n", size);
+	av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read begin %d\n", size);
     TCPContext *s = h->priv_data;
     int ret;
     int nread = 0;
