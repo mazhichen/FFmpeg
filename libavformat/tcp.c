@@ -346,6 +346,7 @@ int ijk_tcp_getaddrinfo_nonblock(const char *hostname, const char *servname,
 /* return non zero if error */
 static int tcp_open(URLContext *h, const char *uri, int flags)
 {
+    av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_open begin");
     struct addrinfo hints = { 0 }, *ai, *cur_ai;
     int port, fd = -1;
     TCPContext *s = h->priv_data;
@@ -423,14 +424,18 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     dns_time = av_gettime();
     if (!dns_entry) {
 #ifdef HAVE_PTHREADS
+        av_log(h, AV_LOG_INFO, ""mzclogprint ijk_tcp_getaddrinfo_nonblock begin.\n");
         ret = ijk_tcp_getaddrinfo_nonblock(hostname, portstr, &hints, &ai, s->addrinfo_timeout, &h->interrupt_callback, s->addrinfo_one_by_one);
+        av_log(h, AV_LOG_INFO, "mzclogprint ijk_tcp_getaddrinfo_nonblock end.\n");
 #else
         if (s->addrinfo_timeout > 0)
             av_log(h, AV_LOG_WARNING, "Ignore addrinfo_timeout without pthreads support.\n");
+        av_log(h, AV_LOG_INFO, "mzclogprint getaddrinfo begin.\n");
         if (!hostname[0])
             ret = getaddrinfo(NULL, portstr, &hints, &ai);
         else
             ret = getaddrinfo(hostname, portstr, &hints, &ai);
+        av_log(h, AV_LOG_INFO, "mzclogprint getaddrinfo end.\n");
 #endif
 
         if (ret) {
@@ -557,6 +562,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     } else {
         freeaddrinfo(ai);
     }
+	av_log(NULL, AV_LOG_INFO, ""mzclogprint tcp_open end");
     return 0;
 
  fail:
@@ -790,6 +796,7 @@ static int tcp_accept(URLContext *s, URLContext **c)
 
 static int tcp_read(URLContext *h, uint8_t *buf, int size)
 {
+	av_log(NULL, AV_LOG_INFO, ""mzclogprint tcp_read begin %d\n", size);
     TCPContext *s = h->priv_data;
     int ret;
     int nread = 0;
@@ -807,6 +814,7 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
     if (ret == 0)
         return AVERROR_EOF;
     if (ret > 0) {
+        av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ret= %d\n", ret);
         if (s->app_ctx) {
             if (s->dash_audio_tcp && s->app_ctx->dash_audio_recv_buffer_size > 0 && s->app_ctx->dash_audio_recv_buffer_size != s->recv_buffer_size) {
                 s->recv_buffer_size = s->app_ctx->dash_audio_recv_buffer_size;
@@ -829,13 +837,18 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
 #endif // SO_NREAD
 
         if (s->dash_audio_tcp) {
+            av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read dash_audio_tcp ret= %d\n", ret);
             av_application_did_io_tcp_read(s->app_ctx, (void*)h, ret, nread, TCP_STREAM_TYPE_DASH_AUDIO);
         } else if (s->dash_video_tcp) {
+            av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read dash_video_tcp ret= %d\n", ret);
             av_application_did_io_tcp_read(s->app_ctx, (void*)h, ret, nread, TCP_STREAM_TYPE_DASH_VIDEO);
         } else {
+            av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read no_tcp ret= %d\n", ret);
             av_application_did_io_tcp_read(s->app_ctx, (void*)h, ret, nread, TCP_STREAM_TYPE_NORMAL);
         }
     }
+	av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read end %d\n", ret);
+
     return ret < 0 ? ff_neterrno() : ret;
 }
 
