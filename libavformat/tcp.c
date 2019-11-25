@@ -814,7 +814,7 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
         }
     }
     ret = recv(s->fd, buf, size, 0);
-    av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ret= %d\n", ret);
+    av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ret test= %d\n", ret);
 //    if (ret == 0)
 //        return AVERROR_EOF;
     if (ret > 0) {
