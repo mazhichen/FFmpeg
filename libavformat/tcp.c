@@ -803,18 +803,21 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
 
     if (!(h->flags & AVIO_FLAG_NONBLOCK)) {
         ret = ff_network_wait_fd_timeout(s->fd, 0, h->rw_timeout, &h->interrupt_callback);
+        av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ff_network_wait_fd_timeout ret= %d\n", ret);
         if (ret) {
+            av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read if (ret) ret= %d\n", ret);
             if (ret == AVERROR(ETIMEDOUT)) {
                 ret = AVERROR_TCP_READ_TIMEOUT;
+                av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read AVERROR_TCP_READ_TIMEOUT ret= %d\n", ret);
             }
             return ret;
         }
     }
     ret = recv(s->fd, buf, size, 0);
+    av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ret= %d\n", ret);
     if (ret == 0)
         return AVERROR_EOF;
     if (ret > 0) {
-        av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ret= %d\n", ret);
         if (s->app_ctx) {
             if (s->dash_audio_tcp && s->app_ctx->dash_audio_recv_buffer_size > 0 && s->app_ctx->dash_audio_recv_buffer_size != s->recv_buffer_size) {
                 s->recv_buffer_size = s->app_ctx->dash_audio_recv_buffer_size;
@@ -880,7 +883,7 @@ static int tcp_write(URLContext *h, const uint8_t *buf, int size)
             }
             return ret;
         } else {
-            av_log(NULL, AV_LOG_WARNING, "tcp_fast_open is error ret = %d\n", ret);
+            av_log(NULL, AV_LOG_WARNING, "mzclogprint tcp_write is error ret = %d\n", ret);
             return ret;
         }
     }
