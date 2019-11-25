@@ -815,8 +815,8 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
     }
     ret = recv(s->fd, buf, size, 0);
     av_log(NULL, AV_LOG_INFO, "mzclogprint tcp_read ret= %d\n", ret);
-    if (ret == 0)
-        return AVERROR_EOF;
+//    if (ret == 0)
+//        return AVERROR_EOF;
     if (ret > 0) {
         if (s->app_ctx) {
             if (s->dash_audio_tcp && s->app_ctx->dash_audio_recv_buffer_size > 0 && s->app_ctx->dash_audio_recv_buffer_size != s->recv_buffer_size) {
